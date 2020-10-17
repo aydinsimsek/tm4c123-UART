@@ -1,6 +1,16 @@
 #include "TM4C123GH6PM.h"
 #include <stdlib.h>
 
+void UART_init(void);
+void LED_config(void);
+
+int main()
+{
+    void UART_init(); 
+    void LED_config();
+    return 0;
+}
+
 void UART_init()
 {
     SYSCTL->RCGCUART |= 0x1; // Enable the UART0 Module
@@ -16,8 +26,10 @@ void UART_init()
     UART0->CTL = 0x301; // Enable the UART, RX and TX sections
 }
 
-int main()
+void LED_config()
 {
-    void UART_init();
-    return 0;
+    SYSCTL->RCGCGPIO |= 0x20; // Enable the clock to the PORTF since LEDs are connected to PF1, PF2 and PF3
+    GPIOF->DIR |= 0xE; // Configure LED pins to be an output
+    GPIOF->DEN |= 0xE; // Enable digital functions for LED pins 
+		GPIOF->DATA &= 0xF1; // Turn off the LEDs
 }
