@@ -1,5 +1,11 @@
 #include "TM4C123.h"
 #include <stdlib.h>
+#include <stdint.h> 
+
+void printString(char *s); 
+void uartTransmit(char c); 
+char uartReceive(void);
+void delay(void); 
 
 int main()
 {
@@ -18,6 +24,52 @@ int main()
     GPIOF->DIR |= 0xE; // Configure LED pins to be an output
     GPIOF->DEN |= 0xE; // Enable digital functions for LED pins 
 		GPIOF->DATA &= 0xF1; // Turn off the LEDs
+
+		printString("Do you want to blink the LEDs? [Y/N]"); 
+		char answer = uartReceive(); 
+		switch(answer) 
+		{
+			case 'Y': 
+				while(1)
+				{
+					GPIOF->DATA = 0x2; // turn on the red LED 
+					delay();
+					GPIOF->DATA = 0x4; // turn on the blue LED 
+					delay();
+					GPIOF->DATA = 0x8; // turn on the green LED 
+					delay(); 
+				}
+			case 'N':
+				GPIOF->DATA = 0x0; 
+				break; 
+			default: 
+				printString("You typed an invalid character"); 
+		}
 }
-		
-		
+	
+void printString(char *s)
+{
+	while(*s != NULL) 
+	{
+		uartTransmit(*(s++));
+	}
+}	
+
+void uartTransmit(char c) 
+{
+	while(UART0->FR & (1<<5)); // if TX holding register is full, wait until it becomes empty 
+	UART0->DR = c; 
+}
+
+char uartReceive()
+{
+	while(UART0->FR & (1<<4)); // if RX holding register is empty, wait until it becomes full  
+	char data = UART0->DR; 
+	return data;
+}
+
+void delay()
+{
+	int i; 
+	for(i=0; i<1000000; i++); 
+} 
